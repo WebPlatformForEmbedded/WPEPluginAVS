@@ -1,0 +1,17 @@
+# platform independent files
+install(DIRECTORY
+    DESTINATION "${PLUGIN_AVS_DATA_PATH}/${PLUGIN_AVS_NAME}"
+    COMPONENT ${MODULE_NAME})
+
+# platform dependent files
+install(FILES "${PLUGIN_AVS_PLATFORM}/AlexaClientSDKConfig.json"
+    DESTINATION "${PLUGIN_AVS_DATA_PATH}/${PLUGIN_AVS_NAME}"
+    COMPONENT ${MODULE_NAME})
+
+install(FILES "${PLUGIN_AVS_PLATFORM}/SmartScreenSDKConfig.json"
+    DESTINATION "${PLUGIN_AVS_DATA_PATH}/${PLUGIN_AVS_NAME}"
+    COMPONENT ${MODULE_NAME})
+
+install(FILES "${PLUGIN_AVS_PLATFORM}/asound.conf"
+    DESTINATION "/etc/"
+    COMPONENT ${MODULE_NAME})
