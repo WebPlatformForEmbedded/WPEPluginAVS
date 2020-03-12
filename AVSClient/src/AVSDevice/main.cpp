@@ -1,19 +1,21 @@
-# If not stated otherwise in this file or this component's license file the
-# following copyright and licenses apply:
-#
-# Copyright 2020 RDK Management
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+/*
+ * If not stated otherwise in this file or this component's license file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2020 RDK Management
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 /*
  * Copyright 2017-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -75,27 +77,27 @@ int main(int argc, char* argv[]) {
             if (strcmp(argv[i], "-C") == 0) {
                 if (i + 1 == argc) {
                     ConsolePrinter::simplePrint("No config specified for -C option");
-                    return AVSClientRC::ERROR;
+                    return SampleAppReturnCode::ERROR;
                 }
                 configFiles.push_back(std::string(argv[++i]));
                 ConsolePrinter::simplePrint("configFile " + std::string(argv[i]));
             } else if (strcmp(argv[i], "-K") == 0) {
                 if (i + 1 == argc) {
                     ConsolePrinter::simplePrint("No wakeword input specified for -K option");
-                    return AVSClientRC::ERROR;
+                    return SampleAppReturnCode::ERROR;
                 }
                 pathToKWDInputFolder = std::string(argv[++i]);
             } else if (strcmp(argv[i], "-L") == 0) {
                 if (i + 1 == argc) {
                     ConsolePrinter::simplePrint("No debugLevel specified for -L option");
-                    return AVSClientRC::ERROR;
+                    return SampleAppReturnCode::ERROR;
                 }
                 logLevel = std::string(argv[++i]);
             } else {
                 ConsolePrinter::simplePrint(
                     "USAGE: " + std::string(argv[0]) + " -C <config1.json> -C <config2.json> ... -C <configN.json> " +
                     " -K <path_to_inputs_folder> -L <log_level>");
-                return AVSClientRC::ERROR;
+                return SampleAppReturnCode::ERROR;
             }
         }
     } else {
@@ -104,7 +106,7 @@ int main(int argc, char* argv[]) {
             ConsolePrinter::simplePrint(
                 "USAGE: " + std::string(argv[0]) +
                 " <path_to_AlexaClientSDKConfig.json> <path_to_inputs_folder> [log_level]");
-            return AVSClientRC::ERROR;
+            return SampleAppReturnCode::ERROR;
         } else {
             pathToKWDInputFolder = std::string(argv[2]);
             if (4 == argc) {
@@ -115,7 +117,7 @@ int main(int argc, char* argv[]) {
         if (argc < 2) {
             ConsolePrinter::simplePrint(
                 "USAGE: " + std::string(argv[0]) + " <path_to_AlexaClientSDKConfig.json> [log_level]");
-            return AVSClientRC::ERROR;
+            return SampleAppReturnCode::ERROR;
         }
         if (3 == argc) {
             logLevel = std::string(argv[2]);
@@ -129,17 +131,17 @@ int main(int argc, char* argv[]) {
     auto consoleReader = std::make_shared<ConsoleReader>();
 
     std::unique_ptr<SampleApplication> sampleApplication;
-    AVSClientRC returnCode = AVSClientRC::OK;
+    SampleAppReturnCode returnCode = SampleAppReturnCode::OK;
 
     do {
-        sampleApplication = SampleApplication::create(nullptr, consoleReader, configFiles, pathToKWDInputFolder, logLevel);
+        sampleApplication = SampleApplication::create(consoleReader, configFiles, pathToKWDInputFolder, logLevel);
         if (!sampleApplication) {
             ConsolePrinter::simplePrint("Failed to create to SampleApplication!");
-            return AVSClientRC::ERROR;
+            return SampleAppReturnCode::ERROR;
         }
         returnCode = sampleApplication->run();
         sampleApplication.reset();
-    } while (AVSClientRC::RESTART == returnCode);
+    } while (SampleAppReturnCode::RESTART == returnCode);
 
     return returnCode;
 }

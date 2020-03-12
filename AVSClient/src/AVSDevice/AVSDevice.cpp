@@ -1,19 +1,21 @@
-# If not stated otherwise in this file or this component's license file the
-# following copyright and licenses apply:
-#
-# Copyright 2020 RDK Management
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+/*
+ * If not stated otherwise in this file or this component's license file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2020 RDK Management
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 /*
  * Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -935,61 +937,80 @@ bool AVSDevice::initialize(
 
 // Creating wake word audio provider, if necessary
 #ifdef KWD
-    bool wakeAlwaysReadable = true;
-    bool wakeCanOverride = false;
-    bool wakeCanBeOverridden = true;
+fprintf(stderr, "****AG enable KWD=%d\n", enableKWD);
 
-    alexaClientSDK::capabilityAgents::aip::AudioProvider wakeWordAudioProvider(
-        sharedDataStream,
-        compatibleAudioFormat,
-        alexaClientSDK::capabilityAgents::aip::ASRProfile::NEAR_FIELD,
-        wakeAlwaysReadable,
-        wakeCanOverride,
-        wakeCanBeOverridden);
+    if(enableKWD) {
 
-    // This observer is notified any time a keyword is detected and notifies the DefaultClient to start recognizing.
-    auto keywordObserver = std::make_shared<alexaClientSDK::sampleApp::KeywordObserver>(client, wakeWordAudioProvider);
+        fprintf(stderr, "**** THIS SHOULD NOT HAPPEN\n");
+
+        bool wakeAlwaysReadable = true;
+        bool wakeCanOverride = false;
+        bool wakeCanBeOverridden = true;
+
+        alexaClientSDK::capabilityAgents::aip::AudioProvider wakeWordAudioProvider(
+            sharedDataStream,
+            compatibleAudioFormat,
+            alexaClientSDK::capabilityAgents::aip::ASRProfile::NEAR_FIELD,
+            wakeAlwaysReadable,
+            wakeCanOverride,
+            wakeCanBeOverridden);
+
+        // This observer is notified any time a keyword is detected and notifies the DefaultClient to start recognizing.
+        auto keywordObserver = std::make_shared<alexaClientSDK::sampleApp::KeywordObserver>(client, wakeWordAudioProvider);
 
 #if defined(KWD_PRYON)
-    m_keywordDetector = alexaClient::kwd::PryonKeywordDetector::create(
-        sharedDataStream,
-        compatibleAudioFormat,
-        {keywordObserver},
-        std::unordered_set<
-            std::shared_ptr<alexaClientSDK::avsCommon::sdkInterfaces::KeyWordDetectorStateObserverInterface>>(),
-        pathToInputFolder);
+        m_keywordDetector = alexaClient::kwd::PryonKeywordDetector::create(
+            sharedDataStream,
+            compatibleAudioFormat,
+            {keywordObserver},
+            std::unordered_set<
+                std::shared_ptr<alexaClientSDK::avsCommon::sdkInterfaces::KeyWordDetectorStateObserverInterface>>(),
+            pathToInputFolder);
 #else
-    m_keywordDetector = alexaClientSDK::kwd::KeywordDetectorProvider::create(
-        sharedDataStream,
-        compatibleAudioFormat,
-        {keywordObserver},
-        std::unordered_set<
-            std::shared_ptr<alexaClientSDK::avsCommon::sdkInterfaces::KeyWordDetectorStateObserverInterface>>(),
-        pathToInputFolder);
+        m_keywordDetector = alexaClientSDK::kwd::KeywordDetectorProvider::create(
+            sharedDataStream,
+            compatibleAudioFormat,
+            {keywordObserver},
+            std::unordered_set<
+                std::shared_ptr<alexaClientSDK::avsCommon::sdkInterfaces::KeyWordDetectorStateObserverInterface>>(),
+            pathToInputFolder);
 #endif
-    if (!m_keywordDetector) {
-        ACSDK_CRITICAL(LX("Failed to create keyword detector!"));
-        return false;
-    }
+        if (!m_keywordDetector) {
+            ACSDK_CRITICAL(LX("Failed to create keyword detector!"));
+            return false;
+        }
 #endif
 
-    m_interactionManager = std::make_shared<alexaClientSDK::sampleApp::InteractionManager>(client
-        , aspInput
-        , userInterfaceManager
+        m_interactionManager = std::make_shared<alexaClientSDK::sampleApp::InteractionManager>(client
+            , aspInput
+            , userInterfaceManager
 #ifdef ENABLE_PCC
-        , phoneCaller
+            , phoneCaller
 #endif
 #ifdef ENABLE_MCC
-        , meetingClient
-        , calendarClient
+            , meetingClient
+            , calendarClient
 #endif
-        , holdToTalkAudioProvider
-        , tapToTalkAudioProvider
-        , m_guiRenderer
-#ifdef KWD
-        , wakeWordAudioProvider
+            , holdToTalkAudioProvider
+            , tapToTalkAudioProvider
+            , m_guiRenderer
+            , wakeWordAudioProvider);
+    } else {
+        m_interactionManager = std::make_shared<alexaClientSDK::sampleApp::InteractionManager>(client
+            , aspInput
+            , userInterfaceManager
+#ifdef ENABLE_PCC
+            , phoneCaller
 #endif
-        );
+#ifdef ENABLE_MCC
+            , meetingClient
+            , calendarClient
+#endif
+            , holdToTalkAudioProvider
+            , tapToTalkAudioProvider
+            , m_guiRenderer);
+
+    }
 
     client->addAlexaDialogStateObserver(m_interactionManager);
 

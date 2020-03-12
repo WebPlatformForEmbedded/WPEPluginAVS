@@ -1,19 +1,21 @@
-# If not stated otherwise in this file or this component's license file the
-# following copyright and licenses apply:
-#
-# Copyright 2020 RDK Management
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+/*
+ * If not stated otherwise in this file or this component's license file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2020 RDK Management
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 /*
  * Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -285,7 +287,11 @@ public:
     /**
      * Destructor.
      */
-    ~ThunderVoiceHandler() {}
+    ~ThunderVoiceHandler() {
+        if(m_service != nullptr) {
+            m_service->Release();
+        }
+    }
 
 private:
     /**
@@ -305,37 +311,41 @@ private:
         , m_interactionHandler{interactionHandler}
         , m_isInitialized{false}
     {
+        m_service->AddRef();
     }
 
     /// Initializes ThunderVoiceHandler.
     bool initialize()
     {
         const std::lock_guard<std::mutex> lock{m_mutex};
+        bool error = false;
 
         if(m_isInitialized) {
-            return m_isInitialized;
+            error = true;
         }
 
-        m_writer = m_audioInputStream->createWriter(alexaClientSDK::avsCommon::avs::AudioInputStream::Writer::Policy::NONBLOCKABLE);
-        if (!m_writer) {
-            ACSDK_CRITICAL(LX("Failed to create stream writer"));
-            return false;
+        if(error != true) {
+            m_writer = m_audioInputStream->createWriter(alexaClientSDK::avsCommon::avs::AudioInputStream::Writer::Policy::NONBLOCKABLE);
+            if (m_writer == nullptr) {
+                ACSDK_CRITICAL(LX("Failed to create stream writer"));
+                error = true;
+            }
         }
 
-        m_voiceProducer = m_service->QueryInterfaceByCallsign<WPEFramework::Exchange::IVoiceProducer>(m_callsign);
-        if(!m_voiceProducer) {
-            ACSDK_ERROR(LX("Failed to obtain VoiceProducer interface!"));
-            return false;
+        if(error != true) {
+            m_voiceProducer = m_service->QueryInterfaceByCallsign<WPEFramework::Exchange::IVoiceProducer>(m_callsign);
+            if(m_voiceProducer == nullptr) {
+                ACSDK_ERROR(LX("Failed to obtain VoiceProducer interface!"));
+                error = true;
+            } else {
+                m_voiceProducer->Callback((&(*m_voiceHandler)));
+            }
         }
 
-        if(!m_voiceHandler) {
-            ACSDK_ERROR(LX("Failed to obtain VoiceHandler!"));
-            return false;
+        if(error != true) {
+            m_isInitialized = true;
         }
 
-        m_voiceProducer->Callback((&(*m_voiceHandler)));
-
-        m_isInitialized = true;
         return m_isInitialized;
     }
 
@@ -369,6 +379,7 @@ private:
         VoiceHandler(ThunderVoiceHandler *parent)
             : m_profile{nullptr}
             , m_parent{parent}
+            , m_isStarted{false}
         {
 
         }
@@ -383,13 +394,18 @@ private:
         {
             ACSDK_DEBUG0(LX("ThunderVoiceHandler::VoiceHandler::Start()"));
 
-            m_profile = profile;
-            if(m_profile) {
-                m_profile->AddRef();
-            }
+            if(m_isStarted == true) {
+                ACSDK_ERROR(LX("The audiotransmission is already started. Skipping..."));
+            } else {
+                m_isStarted = true;
+                m_profile = profile;
+                if(m_profile) {
+                    m_profile->AddRef();
+                }
 
-            if(m_parent && m_parent->m_interactionHandler) {
-                m_parent->m_interactionHandler->HoldToTalk();
+                if(m_parent && m_parent->m_interactionHandler) {
+                    m_parent->m_interactionHandler->HoldToTalk();
+                }
             }
         }
 
@@ -410,6 +426,8 @@ private:
             if(m_parent && m_parent->m_interactionHandler) {
                 m_parent->m_interactionHandler->HoldToTalk();
             }
+
+            m_isStarted = false;
         }
 
         /**
@@ -442,6 +460,8 @@ private:
         const WPEFramework::Exchange::IVoiceProducer::IProfile* m_profile;
         /// The parent class.
         ThunderVoiceHandler *m_parent;
+        /// The audiotransmission is started
+        bool m_isStarted;
     };
 
 private:

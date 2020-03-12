@@ -1,19 +1,21 @@
-# If not stated otherwise in this file or this component's license file the
-# following copyright and licenses apply:
-#
-# Copyright 2020 RDK Management
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+/*
+ * If not stated otherwise in this file or this component's license file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2020 RDK Management
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #pragma once
 
@@ -44,6 +46,8 @@ namespace Plugin {
         class ConnectionNotification : public RPC::IRemoteConnection::INotification {
         public:
             ConnectionNotification() = delete;
+            ConnectionNotification(const ConnectionNotification&) = delete;
+            ConnectionNotification& operator=(const ConnectionNotification&) = delete;
 
         public:
             explicit ConnectionNotification(AVS* parent)
@@ -51,16 +55,21 @@ namespace Plugin {
             {
                 ASSERT(parent != nullptr);
             }
+
             virtual ~ConnectionNotification() = default;
-
-        public:
-            virtual void Activated(RPC::IRemoteConnection* connection) { _parent.Activated(connection); }
-
-            virtual void Deactivated(RPC::IRemoteConnection* connection) { _parent.Deactivated(connection); }
 
             BEGIN_INTERFACE_MAP(ConnectionNotification)
                 INTERFACE_ENTRY(RPC::IRemoteConnection::INotification)
             END_INTERFACE_MAP
+
+        public:
+            void Activated(RPC::IRemoteConnection* connection) override {
+                _parent.Activated(connection);
+            }
+
+            void Deactivated(RPC::IRemoteConnection* connection) override {
+                _parent.Deactivated(connection);
+            }
 
         private:
             AVS& _parent;
@@ -69,6 +78,7 @@ namespace Plugin {
         class AudiosourceNotification : public PluginHost::IPlugin::INotification
         {
         public:
+            AudiosourceNotification() = delete;
             AudiosourceNotification(const AudiosourceNotification&) = delete;
             AudiosourceNotification& operator=(const AudiosourceNotification&) = delete;
 
@@ -89,7 +99,7 @@ namespace Plugin {
             void StateChange(WPEFramework::PluginHost::IShell* service) override
             {
                 if(!service) {
-                    TRACE_L1("Service is a nullptr!");
+                    TRACE_L1(_T("Service is a nullptr!"));
                     return;
                 }
 
@@ -106,24 +116,28 @@ namespace Plugin {
 
         class DialogueNotification : public Exchange::IAVSController::INotification {
         public:
+            DialogueNotification() = delete;
             DialogueNotification(const DialogueNotification&) = delete;
             DialogueNotification& operator=(const DialogueNotification&) = delete;
-            ~DialogueNotification() = default;
 
-            DialogueNotification(AVS* parent)
+        public:
+            explicit DialogueNotification(AVS* parent)
                 : _parent(*parent)
             {
                 ASSERT(parent != nullptr);
             }
 
-            void DialogueStateChange(const Exchange::IAVSController::INotification::dialoguestate state) const override
-            {
-                Exchange::JAVSController::Event::DialogueStateChange(_parent, state);
-            }
+            ~DialogueNotification() = default;
 
             BEGIN_INTERFACE_MAP(DialogueNotification)
                 INTERFACE_ENTRY(Exchange::IAVSController::INotification)
             END_INTERFACE_MAP
+
+        public:
+            void DialogueStateChange(const Exchange::IAVSController::INotification::dialoguestate state) override
+            {
+                Exchange::JAVSController::Event::DialogueStateChange(_parent, state);
+            }
 
         private:
             AVS& _parent;

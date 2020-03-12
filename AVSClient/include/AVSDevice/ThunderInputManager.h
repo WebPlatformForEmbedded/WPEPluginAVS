@@ -1,19 +1,21 @@
-# If not stated otherwise in this file or this component's license file the
-# following copyright and licenses apply:
-#
-# Copyright 2020 RDK Management
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+/*
+ * If not stated otherwise in this file or this component's license file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2020 RDK Management
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 /*
  * Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -60,12 +62,16 @@ public:
     public:
         AVSController(const AVSController&) = delete;
         AVSController& operator=(const AVSController&) = delete;
-        ~AVSController() = default;
 
         /**
          * Constructor
          */
         AVSController(ThunderInputManager* parent);
+
+        /**
+         * Destructor
+         */
+        ~AVSController();
 
         /**
          * Notifies registered clients about DialogUXState change
@@ -76,7 +82,7 @@ public:
         /// @name WPEFramework::Exchange::IAVSController Functions
         /// @{
         void Register(INotification* sink) override;
-        void Unregister(INotification* sink) override;
+        void Unregister(const INotification* sink) override;
         uint32_t Mute(const bool mute) override;
         uint32_t Record(const bool start) override;
         /// @}
@@ -87,7 +93,7 @@ public:
 
     private:
         ThunderInputManager& m_parent;
-        std::vector<WPEFramework::Exchange::IAVSController::INotification*> m_notifications;
+        std::list<WPEFramework::Exchange::IAVSController::INotification*> m_notifications;
     };
 
 

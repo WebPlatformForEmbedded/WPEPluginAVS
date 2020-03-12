@@ -1,20 +1,3 @@
-# If not stated otherwise in this file or this component's license file the
-# following copyright and licenses apply:
-#
-# Copyright 2020 RDK Management
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 /*
  * Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
@@ -41,7 +24,7 @@
 
 #include "ConsoleReader.h"
 #include "InteractionManager.h"
-#include "AVSClientRC.h"
+#include "SampleApplicationReturnCodes.h"
 
 namespace alexaClientSDK {
 namespace sampleApp {
@@ -68,9 +51,9 @@ public:
     /**
      * Processes user input until a quit command or a device reset is triggered.
      *
-     * @return Returns a @c AVSClientRC.
+     * @return Returns a @c SampleAppReturnCode.
      */
-    AVSClientRC run();
+    SampleAppReturnCode run();
 
     /// @name RegistrationObserverInterface Functions
     /// @{
@@ -162,7 +145,7 @@ private:
     /// the app.
     std::atomic_bool m_limitedInteraction;
 
-    /// Flag to indicate that the @c run() should stop and return @c AVSClientRC::RESTART.
+    /// Flag to indicate that the @c run() should stop and return @c SampleAppReturnCode::RESTART.
     std::atomic_bool m_restart;
 };
 
