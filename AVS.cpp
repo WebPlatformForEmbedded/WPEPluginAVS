@@ -1,5 +1,5 @@
-/*
- * If not stated otherwise in this file or this component's license file the
+ /*
+ * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
  * Copyright 2020 RDK Management
@@ -22,153 +22,124 @@
 namespace WPEFramework {
 namespace Plugin {
 
-SERVICE_REGISTRATION(AVS, 1, 0);
+    SERVICE_REGISTRATION(AVS, 1, 0);
 
-const string AVS::Initialize(PluginHost::IShell* service)
-{
-    string message = EMPTY_STRING;
-    Config config;
+    const string AVS::Initialize(PluginHost::IShell* service)
+    {
+        string message = EMPTY_STRING;
+        Config config;
 
-    ASSERT(service != nullptr);
-    ASSERT(_service == nullptr);
-
-    ASSERT(service->PersistentPath() != _T(""));
-    Core::Directory directory((service->PersistentPath() + _T("/db")).c_str());
-    if (directory.CreatePath() != true) {
-        message = _T("Failed to create Persistent Path");
-    }
-
-    if(message.empty() == true) {
-        config.FromString(service->ConfigLine());
-        if (config.AlexaClientConfig.IsSet() != true) {
-            message = _T("Missing AlexaClient config file");
-        }
-    }
-
-    if(message.empty() == true) {
-        if (config.LogLevel.IsSet() != true) {
-            message = _T("Missing log level");
-        }
-    }
-
-    if(message.empty() == true) {
-        _audiosourceName = config.Audiosource.Value();
-        if(_audiosourceName.empty() == true) {
-            message = _T("Missign audiosource callsing");
-        }
-    }
-
-    if(message.empty() == true) {
-        if(config.EnableSmartScreen.Value() == true) {
-#if !defined(ENABLE_SMART_SCREEN_SUPPORT)
-            message = _T("Smart Screen support is not compiled in!");
-#else
-            TRACE_L1(_T("Launching AVSClient - Smart Screen..."));
-
-            _AVSClient = service->Root<Exchange::IAVSClient>(_connectionId, ImplWaitTime, _T("SmartScreen"));
-            if(_AVSClient == nullptr) {
-                message = _T("Failed to create the AVSClient - Smart Screen");
-            } else {
-                bool status = _AVSClient->Initialize(
-                    service,
-                    config.AlexaClientConfig.Value(),
-                    config.SmartScreenConfig.Value(),
-                    config.KWDModelsPath.Value(),
-                    _audiosourceName,
-                    config.EnableKWD.Value(),
-                    config.LogLevel.Value());
-
-                if(status != true) {
-                    _AVSClient->Release();
-                    message = _T("Failed to initialize the AVSClient - Smart Screen");
-                }
-            }
-#endif
-        } else {
-            TRACE_L1(_T("Launching AVSClient - AVS Device..."));
-
-            _AVSClient = service->Root<Exchange::IAVSClient>(_connectionId, ImplWaitTime, _T("AVSDevice"));
-            if(_AVSClient == nullptr) {
-                message = _T("Failed to create the AVSClient - AVSDevice");
-            } else {
-                bool status = _AVSClient->Initialize(
-                    service,
-                    config.AlexaClientConfig.Value(),
-                    std::string(),
-                    config.KWDModelsPath.Value(),
-                    _audiosourceName,
-                    config.EnableKWD.Value(),
-                    config.LogLevel.Value());
-
-                if(status == false) {
-                    _AVSClient->Release();
-                    message = _T("Failed to initialize the AVSClient - AVSDevice");
-                }
-            }
-        }
-    }
-
-    if(message.empty() == true) {
-        _controller = _AVSClient->Controller();
-        if(_controller != nullptr) {
-            _controller->AddRef();
-            _controller->Register(&_dialogueNotification);
-            Exchange::JAVSController::Register(*this, _controller);
-        }
-    }
-
-    if(message.empty() == true) {
-        service->Register(&_audiosourceNotification);
-        service->Register(&_connectionNotification);
-        _service =  service;
+        ASSERT(service != nullptr);
+        ASSERT(_service == nullptr);
+        _service = service;
         _service->AddRef();
-    }
 
-    return message;
-}
-
-void AVS::Deinitialize(PluginHost::IShell* service)
-{
-    ASSERT(_service == service);
-
-
-    if(_AVSClient != nullptr) {
-        TRACE_L1(_T("Deinitializing AVSClient..."));
-
-        if(_controller != nullptr) {
-            _controller->Unregister(&_dialogueNotification);
-            _controller->Release();
-            Exchange::JAVSController::Unregister(*this);
+        ASSERT(service->PersistentPath() != _T(""));
+        Core::Directory directory((service->PersistentPath() + _T("/db")).c_str());
+        if (directory.CreatePath() != true) {
+            message = _T("Failed to create Persistent Path");
         }
 
-        if(_AVSClient->Deinitialize() == false) {
-            TRACE_L1(_T("AVSClient deinitialize failed!"));
+        config.FromString(service->ConfigLine());
+
+        if (message.empty() == true) {
+            _audiosourceName = config.Audiosource.Value();
+            if (_audiosourceName.empty() == true) {
+                message = _T("Missign audiosource callsing");
+            }
         }
-        _AVSClient->Release();
+
+        if (message.empty() == true) {
+            if (config.EnableSmartScreen.Value() == true) {
+                message = CreateInstance(_T("SmartScreen"), config);
+            } else {
+                message = CreateInstance(_T("AVSDevice"), config);
+            }
+        }
+
+        if (message.empty() == true) {
+            _controller = _AVSClient->Controller();
+            if (_controller != nullptr) {
+                _controller->AddRef();
+                _controller->Register(&_dialogueNotification);
+                Exchange::JAVSController::Register(*this, _controller);
+            }
+        }
+
+        if (message.empty() == true) {
+            service->Register(&_audiosourceNotification);
+            service->Register(&_connectionNotification);
+        }
+
+        return message;
     }
 
-    _service->Unregister(&_audiosourceNotification);
-    _service->Unregister(&_connectionNotification);
-    _service->Release();
-    _service = nullptr;
-}
+    void AVS::Deinitialize(PluginHost::IShell* service)
+    {
+        ASSERT(_service == service);
 
-string AVS::Information() const
-{
-    return (_T("Alexa Voice Service Client"));
-}
+        if (_AVSClient != nullptr) {
+            TRACE_L1(_T("Deinitializing AVSClient..."));
 
-void AVS::Activated(RPC::IRemoteConnection* /*connection*/)
-{
-    return;
-}
+            if (_controller != nullptr) {
+                _controller->Unregister(&_dialogueNotification);
+                _controller->Release();
+                Exchange::JAVSController::Unregister(*this);
+            }
 
-void AVS::Deactivated(RPC::IRemoteConnection* connection)
-{
-    if (_connectionId == connection->Id()) {
-        ASSERT(_service != nullptr);
-        PluginHost::WorkerPool::Instance().Submit(PluginHost::IShell::Job::Create(_service, PluginHost::IShell::DEACTIVATED, PluginHost::IShell::FAILURE));
+            if (_AVSClient->Deinitialize() == false) {
+                TRACE_L1(_T("AVSClient deinitialize failed!"));
+            }
+            _AVSClient->Release();
+        }
+
+        _service->Unregister(&_audiosourceNotification);
+        _service->Unregister(&_connectionNotification);
+        _service->Release();
+        _service = nullptr;
     }
-}
+
+    string AVS::Information() const
+    {
+        return (_T("Alexa Voice Service Client"));
+    }
+
+    void AVS::Activated(RPC::IRemoteConnection* /*connection*/)
+    {
+        return;
+    }
+
+    void AVS::Deactivated(RPC::IRemoteConnection* connection)
+    {
+        if (_connectionId == connection->Id()) {
+            ASSERT(_service != nullptr);
+            PluginHost::WorkerPool::Instance().Submit(PluginHost::IShell::Job::Create(_service, PluginHost::IShell::DEACTIVATED, PluginHost::IShell::FAILURE));
+        }
+    }
+
+    const string AVS::CreateInstance(const string& name, const Config& config)
+    {
+        TRACE_L1(_T("Launching AVSClient - %s..."), name.c_str());
+
+        string message = _T("");
+        string configStr;
+
+        if (config.ToString(configStr) != true) {
+            message = _T("Failed to convert configuration to string");
+        } else {
+            _AVSClient = _service->Root<Exchange::IAVSClient>(_connectionId, ImplWaitTime, name);
+            if (_AVSClient == nullptr) {
+                message = _T("Failed to create the AVSClient - " + name);
+            } else {
+                if (_AVSClient->Initialize(_service, configStr) != true) {
+                    _AVSClient->Release();
+                    message = _T("Failed to initialize the AVSClient - " + name);
+                }
+            }
+        }
+
+        return message;
+    }
+
 } // namespace Plugin
 } // namespace WPEFramework

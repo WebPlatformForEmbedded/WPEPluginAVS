@@ -1,5 +1,5 @@
-/*
- * If not stated otherwise in this file or this component's license file the
+ /*
+ * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
  * Copyright 2020 RDK Management
@@ -8,9 +8,9 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
+ * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -24,8 +24,7 @@
 #include <interfaces/IAVSClient.h>
 #include <interfaces/JAVSController.h>
 
-#include "AVSDevice/AVSDevice.h"
-#include "AVSClientRC.h"
+#include <AVS/SampleApp/SampleApplicationReturnCodes.h>
 
 #if defined(ENABLE_SMART_SCREEN_SUPPORT)
 #include "SmartScreen/SmartScreen.h"
@@ -42,7 +41,6 @@ namespace Plugin {
         AVS& operator=(const AVS&) = delete;
 
     private:
-
         class ConnectionNotification : public RPC::IRemoteConnection::INotification {
         public:
             ConnectionNotification() = delete;
@@ -59,15 +57,17 @@ namespace Plugin {
             virtual ~ConnectionNotification() = default;
 
             BEGIN_INTERFACE_MAP(ConnectionNotification)
-                INTERFACE_ENTRY(RPC::IRemoteConnection::INotification)
+            INTERFACE_ENTRY(RPC::IRemoteConnection::INotification)
             END_INTERFACE_MAP
 
         public:
-            void Activated(RPC::IRemoteConnection* connection) override {
+            void Activated(RPC::IRemoteConnection* connection) override
+            {
                 _parent.Activated(connection);
             }
 
-            void Deactivated(RPC::IRemoteConnection* connection) override {
+            void Deactivated(RPC::IRemoteConnection* connection) override
+            {
                 _parent.Deactivated(connection);
             }
 
@@ -75,8 +75,7 @@ namespace Plugin {
             AVS& _parent;
         };
 
-        class AudiosourceNotification : public PluginHost::IPlugin::INotification
-        {
+        class AudiosourceNotification : public PluginHost::IPlugin::INotification {
         public:
             AudiosourceNotification() = delete;
             AudiosourceNotification(const AudiosourceNotification&) = delete;
@@ -92,19 +91,19 @@ namespace Plugin {
             ~AudiosourceNotification() = default;
 
             BEGIN_INTERFACE_MAP(AudiosourceNotification)
-                INTERFACE_ENTRY(PluginHost::IPlugin::INotification)
+            INTERFACE_ENTRY(PluginHost::IPlugin::INotification)
             END_INTERFACE_MAP
 
         public:
             void StateChange(WPEFramework::PluginHost::IShell* service) override
             {
-                if(!service) {
+                if (!service) {
                     TRACE_L1(_T("Service is a nullptr!"));
                     return;
                 }
 
-                if(service->Callsign() == _parent._audiosourceName) {
-                    if(_parent._AVSClient) {
+                if (service->Callsign() == _parent._audiosourceName) {
+                    if (_parent._AVSClient) {
                         _parent._AVSClient->StateChange(service);
                     }
                 }
@@ -130,7 +129,7 @@ namespace Plugin {
             ~DialogueNotification() = default;
 
             BEGIN_INTERFACE_MAP(DialogueNotification)
-                INTERFACE_ENTRY(Exchange::IAVSController::INotification)
+            INTERFACE_ENTRY(Exchange::IAVSController::INotification)
             END_INTERFACE_MAP
 
         public:
@@ -180,7 +179,6 @@ namespace Plugin {
             Core::JSON::Boolean EnableKWD;
         };
 
-
     public:
         static constexpr uint32_t ImplWaitTime = 2000;
 
@@ -201,8 +199,8 @@ namespace Plugin {
         }
 
         BEGIN_INTERFACE_MAP(AVS)
-            INTERFACE_ENTRY(PluginHost::IPlugin)
-            INTERFACE_ENTRY(PluginHost::IDispatcher)
+        INTERFACE_ENTRY(PluginHost::IPlugin)
+        INTERFACE_ENTRY(PluginHost::IDispatcher)
         END_INTERFACE_MAP
 
         //   IPlugin methods
@@ -214,6 +212,7 @@ namespace Plugin {
     private:
         void Activated(RPC::IRemoteConnection* connection);
         void Deactivated(RPC::IRemoteConnection* connection);
+        const string CreateInstance(const string& name, const Config& config);
 
         Exchange::IAVSClient* _AVSClient;
         Exchange::IAVSController* _controller;
@@ -223,7 +222,6 @@ namespace Plugin {
         Core::Sink<AudiosourceNotification> _audiosourceNotification;
         Core::Sink<ConnectionNotification> _connectionNotification;
         Core::Sink<DialogueNotification> _dialogueNotification;
-
     };
 
 } // namespace Plugin
