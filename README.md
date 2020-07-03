@@ -1,2 +1,3 @@
 # WPEPluginAVS
-Plugin for Amazon Voice Service
+
+This plugin allows usage of Amazon Alexa Voice Service
