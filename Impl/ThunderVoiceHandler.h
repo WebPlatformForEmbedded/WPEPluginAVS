@@ -28,7 +28,7 @@
 
 #include <Audio/MicrophoneInterface.h>
 
-#include <AVS/SampleApp/InteractionManager.h>
+#include <SampleApp/InteractionManager.h>
 #if defined(ENABLE_SMART_SCREEN_SUPPORT)
 #include <SmartScreen/SampleApp/GUI/GUIManager.h>
 #endif
@@ -157,6 +157,10 @@ namespace Plugin {
             return true;
         }
 
+	bool isStreaming() override {
+	    return (true);
+	}
+
         void stateChange(WPEFramework::PluginHost::IShell* audiosource)
         {
             if (audiosource->State() == WPEFramework::PluginHost::IShell::ACTIVATED) {
@@ -189,9 +193,9 @@ namespace Plugin {
             , m_callsign{ callsign }
             , m_service{ service }
             , m_voiceProducer{ nullptr }
-            , m_voiceHandler{ WPEFramework::Core::ProxyType<VoiceHandler>::Create(this) }
-            , m_interactionHandler{ interactionHandler }
             , m_isInitialized{ false }
+            , m_interactionHandler{ interactionHandler }
+            , m_voiceHandler{ WPEFramework::Core::ProxyType<VoiceHandler>::Create(this) }
         {
             m_service->AddRef();
         }
@@ -310,6 +314,9 @@ namespace Plugin {
                     }
                 }
             }
+	    bool IsStreaming() {
+		return (m_isStarted);
+	    }
 
             BEGIN_INTERFACE_MAP(VoiceHandler)
             INTERFACE_ENTRY(WPEFramework::Exchange::IVoiceHandler)
@@ -323,16 +330,16 @@ namespace Plugin {
 
     private:
         const std::shared_ptr<alexaClientSDK::avsCommon::avs::AudioInputStream> m_audioInputStream;
-        std::shared_ptr<alexaClientSDK::avsCommon::avs::AudioInputStream::Writer> m_writer;
-        std::shared_ptr<InteractionHandler<MANAGER>> m_interactionHandler;
-
+        string m_callsign;
         WPEFramework::PluginHost::IShell* m_service;
         WPEFramework::Exchange::IVoiceProducer* m_voiceProducer;
+        bool m_isInitialized;
+        std::shared_ptr<InteractionHandler<MANAGER>> m_interactionHandler;
+        std::shared_ptr<alexaClientSDK::avsCommon::avs::AudioInputStream::Writer> m_writer;
+
         WPEFramework::Core::ProxyType<VoiceHandler> m_voiceHandler;
 
-        bool m_isInitialized;
         std::mutex m_mutex;
-        string m_callsign;
     };
 
 } // namespace Plugin

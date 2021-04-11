@@ -161,7 +161,9 @@ namespace Plugin {
 
     void ThunderInputManager::onCapabilitiesStateChange(
         CapabilitiesObserverInterface::State newState,
-        CapabilitiesObserverInterface::Error newError)
+        CapabilitiesObserverInterface::Error newError,
+        const std::vector<std::string>& addedOrUpdatedEndpointIds,
+        const std::vector<std::string>& deletedEndpointIds)
     {
         m_limitedInteraction = m_limitedInteraction || (newState == CapabilitiesObserverInterface::State::FATAL_ERROR);
     }

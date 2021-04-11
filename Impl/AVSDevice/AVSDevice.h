@@ -25,7 +25,7 @@
 #include <WPEFramework/interfaces/IAVSClient.h>
 
 #include <AVS/KWD/AbstractKeywordDetector.h>
-#include <AVS/SampleApp/SampleApplication.h>
+#include <SampleApp/SampleApplication.h>
 
 #include <vector>
 
