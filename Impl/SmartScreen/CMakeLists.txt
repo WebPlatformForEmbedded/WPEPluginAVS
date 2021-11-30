@@ -22,8 +22,8 @@ find_package(AlexaSmartScreenSDK REQUIRED)
 find_package(GStreamer REQUIRED)
 find_package(Portaudio)
 find_package(Asio REQUIRED)
-find_package(APLCore REQUIRED)
-find_package(Yoga REQUIRED)
+# find_package(APLCore REQUIRED)
+# find_package(Yoga REQUIRED)
 
 find_package(PryonLite)
 
@@ -51,12 +51,15 @@ set_target_properties(${MODULE_NAME}
 target_include_directories(${MODULE_NAME}
     PUBLIC
         ../
-        ${NAMESPACE}Plugins::${NAMESPACE}Plugins
         ${ALEXA_CLIENT_SDK_INCLUDES}
         ${ALEXA_SMART_SCREEN_SDK_INCLUDES})
 
 target_link_libraries(${MODULE_NAME}
     PRIVATE
+        CompileSettingsDebug::CompileSettingsDebug
+        ${NAMESPACE}Core::${NAMESPACE}Core
+        ${NAMESPACE}Plugins::${NAMESPACE}Plugins
+        ${NAMESPACE}Definitions::${NAMESPACE}Definitions
         ${ALEXA_CLIENT_SDK_LIBRARIES}
         ${ALEXA_SMART_SCREEN_SDK_LIBRARIES})
 
@@ -91,19 +94,19 @@ else()
     message(FATAL_ERROR "MISSING Asio (Standalone) Library")
 endif()
 
-if(APL_CORE_FOUND)
-    target_include_directories(${MODULE_NAME} PRIVATE APLCore::APLCore)
-    add_definitions(-DAPL_CORE)
-    target_link_libraries(${MODULE_NAME} PRIVATE ${APL_CORE_LIBRARIES})
-else()
-    message(FATAL_ERROR "MISSING APL Core Library")
-endif()
+# if(APL_CORE_FOUND)
+#     target_include_directories(${MODULE_NAME} PRIVATE APLCore::APLCore)
+#    add_definitions(-DAPL_CORE)
+#    target_link_libraries(${MODULE_NAME} PRIVATE ${APL_CORE_LIBRARIES})
+# else()
+#    message(FATAL_ERROR "MISSING APL Core Library")
+# endif()
 
-if(YOGA_FOUND)
-    target_include_directories(${MODULE_NAME} PRIVATE Yoga::Yoga)
-    target_link_libraries(${MODULE_NAME} PRIVATE ${YOGA_LIBRARIES})
-else()
-    message(FATAL_ERROR "MISSING Yoga Library")
-endif()
+# if(YOGA_FOUND)
+#     target_include_directories(${MODULE_NAME} PRIVATE Yoga::Yoga)
+#     target_link_libraries(${MODULE_NAME} PRIVATE ${YOGA_LIBRARIES})
+# else()
+#     message(FATAL_ERROR "MISSING Yoga Library")
+# endif()
 
 install(TARGETS ${MODULE_NAME} DESTINATION lib/)

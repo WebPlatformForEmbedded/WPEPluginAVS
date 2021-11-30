@@ -25,7 +25,7 @@
 
 #include <AVS/KWD/AbstractKeywordDetector.h>
 
-#include <SmartScreen/SampleApp/SampleApplication.h>
+#include <SampleApp/SampleApplication.h>
 
 #include <vector>
 

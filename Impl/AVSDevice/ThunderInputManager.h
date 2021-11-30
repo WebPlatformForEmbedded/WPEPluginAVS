@@ -19,11 +19,12 @@
 
 #pragma once
 
+#include <SampleApp/InteractionManager.h>
+
 #include "TraceCategories.h"
 
 #include <WPEFramework/interfaces/IAVSClient.h>
 
-#include <AVS/SampleApp/InteractionManager.h>
 
 #include <atomic>
 
@@ -72,11 +73,16 @@ namespace Plugin {
         ThunderInputManager(std::shared_ptr<alexaClientSDK::sampleApp::InteractionManager> interactionManager);
 
         void onAuthStateChange(AuthObserverInterface::State newState, AuthObserverInterface::Error newError) override;
-        void onCapabilitiesStateChange(CapabilitiesObserverInterface::State newState, CapabilitiesObserverInterface::Error newError) override;
+        void onCapabilitiesStateChange(
+		CapabilitiesObserverInterface::State newState,
+		CapabilitiesObserverInterface::Error newError,
+                const std::vector<std::string>& addedOrUpdatedEndpointIds,
+                const std::vector<std::string>& deletedEndpointIds) override;
 
-        WPEFramework::Core::ProxyType<AVSController> m_controller;
-        std::shared_ptr<alexaClientSDK::sampleApp::InteractionManager> m_interactionManager;
+
         std::atomic_bool m_limitedInteraction;
+        std::shared_ptr<alexaClientSDK::sampleApp::InteractionManager> m_interactionManager;
+        WPEFramework::Core::ProxyType<AVSController> m_controller;
     };
 
 } // namespace Plugin

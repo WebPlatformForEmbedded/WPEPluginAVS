@@ -31,23 +31,22 @@
 #include <AVSCommon/Utils/LibcurlUtils/LibcurlHTTP2ConnectionFactory.h>
 #include <AVSCommon/Utils/Logger/LoggerSinkManager.h>
 #include <AVSCommon/Utils/Network/InternetConnectionMonitor.h>
-#include <Alerts/Storage/SQLiteAlertStorage.h>
+#include <acsdkAlerts/Storage/SQLiteAlertStorage.h>
 #include <Audio/AudioFactory.h>
 #include <CBLAuthDelegate/CBLAuthDelegate.h>
 #include <CBLAuthDelegate/SQLiteCBLAuthDelegateStorage.h>
 #include <ContextManager/ContextManager.h>
-#include <Notifications/SQLiteNotificationsStorage.h>
+#include <AVS/acsdkNotifications/SQLiteNotificationsStorage.h>
 #include <SQLiteStorage/SQLiteMiscStorage.h>
 #include <Settings/Storage/SQLiteDeviceSettingStorage.h>
 
-#include <SmartScreen/Communication/WebSocketServer.h>
+#include <Communication/WebSocketServer.h>
 
-#include <SmartScreen/SampleApp/AplCoreEngineSDKLogBridge.h>
-#include <SmartScreen/SampleApp/AplCoreGuiRenderer.h>
-#include <SmartScreen/SampleApp/JsonUIManager.h>
-#include <SmartScreen/SampleApp/KeywordObserver.h>
-#include <SmartScreen/SampleApp/LocaleAssetsManager.h>
-#include <SmartScreen/SampleApp/PortAudioMicrophoneWrapper.h>
+#include <APLClient/AplCoreGuiRenderer.h>
+#include <SampleApp/JsonUIManager.h>
+#include <SampleApp/KeywordObserver.h>
+#include <SampleApp/LocaleAssetsManager.h>
+#include <SampleApp/PortAudioMicrophoneWrapper.h>
 
 #include <cctype>
 #include <fstream>
@@ -595,7 +594,7 @@ namespace Plugin {
         }
 
         if (status == true) {
-            TRACE(AVSClient, ((_T("Running app with log level: %s"), avsCommon::utils::logger::convertLevelToName(logLevelValue).c_str())));
+            TRACE(AVSClient, (_T("Running app with log level: %s"), avsCommon::utils::logger::convertLevelToName(logLevelValue).c_str()));
             thunderLogger->setLevel(logLevelValue);
             avsCommon::utils::logger::LoggerSinkManager::instance().initialize(thunderLogger);
         }
@@ -616,7 +615,7 @@ namespace Plugin {
 
         auto configStream = std::shared_ptr<std::ifstream>(new std::ifstream(configFile));
         if (!configStream->good()) {
-            TRACE(AVSClient, ((_T("Failed to read config file %s"), configFile.c_str())));
+            TRACE(AVSClient, (_T("Failed to read config file %s"), configFile.c_str()));
             return false;
         }
 

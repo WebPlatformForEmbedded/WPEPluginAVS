@@ -48,7 +48,13 @@ target_include_directories(${MODULE_NAME}
         ${NAMESPACE}Plugins::${NAMESPACE}Plugins
         ${ALEXA_CLIENT_SDK_INCLUDES})
 
-target_link_libraries(${MODULE_NAME} PRIVATE ${ALEXA_CLIENT_SDK_LIBRARIES})
+target_link_libraries(${MODULE_NAME} 
+    PRIVATE
+        CompileSettingsDebug::CompileSettingsDebug
+        ${NAMESPACE}Core::${NAMESPACE}Core
+        ${NAMESPACE}Plugins::${NAMESPACE}Plugins
+        ${NAMESPACE}Definitions::${NAMESPACE}Definitions
+        ${ALEXA_CLIENT_SDK_LIBRARIES})
 
 if(PLUGIN_AVS_ENABLE_KWD_SUPPORT)
     if(PRYON_LITE_FOUND)
